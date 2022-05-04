@@ -1,4 +1,4 @@
-import 'package:adsense/adhelper.dart';
+import 'package:adsense/adHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -11,6 +11,8 @@ class GameRoute extends StatefulWidget {
 
 class _GameRouteState extends State<GameRoute> {
 
+  double rewardPoint = 0;
+
   late BannerAd _bannerAd;
   bool _isBannerAdReady = false;
 
@@ -20,7 +22,7 @@ class _GameRouteState extends State<GameRoute> {
   InterstitialAd? _interstitialAd;
   bool _isInterstitialAdReady = false;
 
-  double rewardpoint = 0;
+
 
   void initState() {
     _bannerAd = BannerAd(
@@ -29,12 +31,10 @@ class _GameRouteState extends State<GameRoute> {
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (_) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
+          _isBannerAdReady = true;
         },
-        onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
+        onAdFailedToLoad: (ad, err){
+          print("Failed to load a banner ad: ${err.message}");
           _isBannerAdReady = false;
           ad.dispose();
         }
@@ -42,14 +42,11 @@ class _GameRouteState extends State<GameRoute> {
     );
 
     _bannerAd.load();
-
     _loadRewardedAd();
-
     _loadInterstitialAd();
   }
 
-  @override
-  void dispose() {
+  void dispose(){
     _bannerAd.dispose();
     super.dispose();
   }
@@ -65,31 +62,29 @@ class _GameRouteState extends State<GameRoute> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Ad banner will be displayed here"),
-
+                  Text("Ad banner will be displayed at the top..."),
                   if (_isRewardedAdReady)
                     ElevatedButton(
-                        onPressed: (){
-                          _rewardedAd?.show(
-                              onUserEarnedReward: (_, reward){
-                                setState(() {
-                                  rewardpoint = reward.amount.toDouble();
-                                });
-                                print("This is my reward $reward");
+                      onPressed: (){
+                        _rewardedAd?.show(
+                            onUserEarnedReward: (_, reward){
+                              setState(() {
+                                rewardPoint = reward.amount.toDouble();
                               });
-                        },
-                        child: Text("Get Reward"),
+                            });
+                      },
+                      child: Text("Get Reward"),
                     ),
-
-                  SizedBox(height: 40,),
-
-                  if (_isInterstitialAdReady)
+                  SizedBox(height:20),
+                  if(_isInterstitialAdReady)
                     TextButton(
-                      onPressed: () => _interstitialAd?.show(),
-                      child: Text("Complete this level"))
+                        onPressed: () => _interstitialAd?.show(),
+                        child: Text("Complete this level"),
+                    ),
                 ],
               ),
             ),
+
             if (_isBannerAdReady)
               Align(
                 alignment: Alignment.topCenter,
@@ -98,55 +93,58 @@ class _GameRouteState extends State<GameRoute> {
                   height: _bannerAd.size.height.toDouble(),
                   child: AdWidget(ad: _bannerAd,),
                 ),
-              ),
-
+              )
           ],
         ),
       ),
     );
   }
 
-  void _loadRewardedAd() {
+  void _loadRewardedAd(){
     RewardedAd.load(
         adUnitId: AdHelper.rewardedAdUnitId,
         request: AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
-          onAdLoaded: (ad) {
-            this._rewardedAd = ad;
+            onAdLoaded: (ad) {
+              this._rewardedAd = ad;
 
-            ad.fullScreenContentCallback = FullScreenContentCallback(
-              onAdDismissedFullScreenContent: (ad) {
-                setState(() {
-                  _isRewardedAdReady = false;
-                });
-                _loadRewardedAd();
-              },
-              onAdShowedFullScreenContent: (reward){
-                showDialog(
+              ad.fullScreenContentCallback = FullScreenContentCallback(
+                onAdDismissedFullScreenContent: (ad){
+                  setState(() {
+                    _isRewardedAdReady = false;
+                  });
+                  _loadRewardedAd();
+                },
+                onAdShowedFullScreenContent: (reward){
+                  showDialog(
                     context: context,
                     builder: (context){
                       return AlertDialog(
                         title: Text("Reward"),
-                        content: Text("You got $rewardpoint reward"),
+                        content: Text("You got $rewardPoint rewards"),
                         actions: [
                           TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text("Close"))
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text("Close"),
+                          )
                         ],
                       );
-                    });
-              }
-            );
-            setState(() {
-              _isRewardedAdReady = true;
-            });
-          },
-          onAdFailedToLoad: (err) {
-            print('Failed to load a rewarded ad: ${err.message}');
-            setState(() {
-              _isRewardedAdReady = false;
-            });
-          },
+                    }
+                  );
+                }
+              );
+
+              setState(() {
+                _isRewardedAdReady = true;
+              });
+              _loadRewardedAd();
+            },
+            onAdFailedToLoad: (err){
+              print('Failed to load a reward ad: ${err.message}');
+              setState(() {
+                _isRewardedAdReady = false;
+              });
+            },
 
         ),
     );
@@ -154,26 +152,23 @@ class _GameRouteState extends State<GameRoute> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-        adUnitId: AdHelper.interstitialAdUnitId,
-        request: AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-            onAdLoaded: (ad) {
-              this._interstitialAd = ad;
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad){
+            this._interstitialAd = ad;
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad){
+                Navigator.of(context).pushNamed('/nextleve');
+              }
+            );
 
-              ad.fullScreenContentCallback = FullScreenContentCallback(
-                onAdDismissedFullScreenContent: (ad) {
-                  Navigator.of(context).pushNamed('/nextlevel');
-                }
-              );
-
-              _isInterstitialAdReady = true;
-            },
-            onAdFailedToLoad: (err){
-              print('Failed to load an interstitial ad: ${err.message}');
-              _isInterstitialAdReady = false;
-            },
-        ),
+            _isInterstitialAdReady = true;
+          },
+          onAdFailedToLoad: (err) {
+            print('Failed to load an interstitial ad: ${err.message}');
+            _isInterstitialAdReady = false;
+          })
     );
   }
-
 }

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-class AdHelper {
+class AdHelper{
 
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {

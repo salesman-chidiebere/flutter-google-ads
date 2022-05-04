@@ -1,5 +1,6 @@
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class HomeRoute extends StatefulWidget {
   const HomeRoute({Key? key}) : super(key: key);
@@ -9,12 +10,12 @@ class HomeRoute extends StatefulWidget {
 }
 
 class _HomeRouteState extends State<HomeRoute> {
-  @override
 
-  Future<InitializationStatus> _initGoogleMobileAds() {
+  Future<InitializationStatus> _initGoogleMobileAds(){
     return MobileAds.instance.initialize();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<void>(
@@ -25,26 +26,21 @@ class _HomeRouteState extends State<HomeRoute> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text("Awesome drawing quiz", style: TextStyle(fontSize: 32),
-                textAlign: TextAlign.center,),
-                SizedBox(height: 40,),
+                Text("Welcome to Admob"),
+                SizedBox(height: 20,),
                 if (snapshot.hasData)
-                  ElevatedButton(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 42.0, vertical: 12),
-                      child: Text("Let\'s get started"),
-                    ),
+                ElevatedButton(
                     onPressed: () => Navigator.of(context).pushNamed('/game'),
-                  )
+                    child: Text("Let\'s get Started"))
                 else if (snapshot.hasError)
-                  Icon(Icons.error_outline, color: Colors.red,size: 32,)
+                  Icon(Icons.error_outline, color: Colors.red, size: 30,)
                 else
-                  CircularProgressIndicator(),
+                  CircularProgressIndicator()
               ],
             ),
           );
         },
-      )
+      ),
     );
   }
 }
